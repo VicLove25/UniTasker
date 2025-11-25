@@ -1,180 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Tasks - UniTasker</title>
-    <!-- Link to Bootstrap CSS (same as your index.html) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Link to your existing stylesheet -->
-    <link rel="stylesheet" href="styles/style.css">
-    <!-- Simple icon library for the filter and menu dots -->
+    <title>My Tasks - TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
+<body>
+    <!-- Toggle Button – HIDDEN until logged in -->
+    <button id="toggle-btn" class="toggle-btn" style="display:none;">
+        <i class="fas fa-bars"></i>
+    </button>
+    <!-- Sidebar – HIDDEN until logged in -->
+    <div id="sidebar" class="sidebar" style="display:none;">
+        <a href="index.html"><i class="fas fa-home me-2"></i><span>Dashboard</span></a>
+        <a href="taskpage.html" class="active"><i class="fas fa-list-check me-2"></i><span>My Tasks</span></a>
+        <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i><span>Calendar</span></a>
+        <a href="settings.html"><i class="fas fa-gear me-2"></i><span>Settings</span></a>
+    </div>
 
-<body class="bg-light">
+    <!-- Main Content -->
+    <div class="main-content container pt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="text-dark mb-1">My Tasks</h2>
+                <p class="text-muted">All your tasks in one place</p>
+            </div>
+            <button id="add-task-btn" class="btn add-task-btn">
+                <i class="fas fa-plus me-2"></i>New Task
+            </button>
+        </div>
 
-    <div class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item"><a class="nav-link active" href="#">All Tasks</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">To Do</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">In Progress</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Completed</a></li>
+        </ul>
 
-                <!-- === Header Section === -->
-                <header class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h1 class="h2 fw-bold">My Tasks</h1>
-                        <p class="text-muted mb-0">Manage your assignments and deadlines</p>
-                    </div>
-                    <button class="btn btn-primary d-flex align-items-center gap-1">
-                        <i class="bi bi-plus-lg"></i>
-                        New Task
-                    </button>
-                </header>
+        <!-- Filter Bar -->
+        <div class="card card-body mb-4 border-0 shadow-sm">
+            <div class="row g-3 align-items-center">
+                <div class="col-auto"><strong>Filters:</strong></div>
+                <div class="col-md-3"><select class="form-select form-select-sm"><option>All Courses</option></select></div>
+                <div class="col-md-3"><select class="form-select form-select-sm"><option>All Types</option></select></div>
+                <div class="col-md-3"><select class="form-select form-select-sm"><option>All Priorities</option></select></div>
+            </div>
+        </div>
 
-                <!-- === Tabs Navigation === -->
-                <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">All Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted" href="#">To Do</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted" href="#">In Progress</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted" href="#">Completed</a>
-                    </li>
-                </ul>
+        <div id="task-list" class="list-group"></div>
 
-                <!-- === Filter Bar === -->
-                <div class="card card-body mb-4">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-md-auto">
-                            <span class="fw-medium"><i class="bi bi-filter"></i> Filters:</span>
-                        </div>
-                        <div class="col-md">
-                            <select class="form-select form-select-sm">
-                                <option selected>All Courses</option>
-                                <option value="1">Info Systems</option>
-                                <option value="2">Databases</option>
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            <select class="form-select form-select-sm">
-                                <option selected>All Types</option>
-                                <option value="1">Homework</option>
-                                <option value="2">Project</option>
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            <select class="form-select form-select-sm">
-                                <option selected>All Priorities</option>
-                                <option value="1">High</option>
-                                <option value="2">Medium</option>
-                                <option value="3">Low</option>
-                            </select>
-                        </div>
-                    </div>
+        <div id="empty-state" class="text-center py-5" style="display:none;">
+            <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No tasks yet</h5>
+            <p class="text-muted">Click "New Task" to get started!</p>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="task-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Add New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
-                <!-- === Task List === -->
-                <!-- This list-group is similar to your index.html -->
-                <main class="list-group">
-
-                    <!-- Task Item 1 (from image) -->
-                    <div class="list-group-item list-group-item-action p-3">
-                        <div class="d-flex w-100 align-items-center">
-                            <!-- Checkbox -->
-                            <div class="form-check me-3">
-                                <input class="form-check-input rounded-circle" type="checkbox" value="" id="task1">
-                            </div>
-                            <!-- Task Info -->
-                            <div class="flex-grow-1">
-                                <label class="h5 mb-1" for="task1">TEST</label>
-                                <div class="mt-1">
-                                    <!-- Badges for tags -->
-                                    <span class="badge bg-danger-subtle text-danger-emphasis rounded-pill fw-normal">Overdue</span>
-                                    <span class="badge bg-primary-subtle text-primary-emphasis rounded-pill fw-normal">Homework</span>
-                                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill fw-normal">medium priority</span>
-                                </div>
-                            </div>
-                            <!-- More Options Button -->
-                            <div class="dropdown">
-                                <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Edit</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Task Item 2 (Example) -->
-                    <div class="list-group-item list-group-item-action p-3">
-                        <div class="d-flex w-100 align-items-center">
-                            <div class="form-check me-3">
-                                <input class="form-check-input rounded-circle" type="checkbox" value="" id="task2">
-                            </div>
-                            <div class="flex-grow-1">
-                                <label class="h5 mb-1" for="task2">Finish project proposal</label>
-                                <div class="mt-1">
-                                    <span class="badge bg-success-subtle text-success-emphasis rounded-pill fw-normal">Info Systems</span>
-                                    <span class="badge bg-info-subtle text-info-emphasis rounded-pill fw-normal">Project</span>
-                                    <span class="badge bg-danger-subtle text-danger-emphasis rounded-pill fw-normal">high priority</span>
-                                </div>
-                            </div>
-                            <div class="dropdown">
-                                <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Edit</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Task Item 3 (Completed Example) -->
-                    <div class="list-group-item list-group-item-action p-3">
-                        <div class="d-flex w-100 align-items-center">
-                            <div class="form-check me-3">
-                                <input class="form-check-input rounded-circle" type="checkbox" value="" id="task3" checked>
-                            </div>
-                            <div class="flex-grow-1">
-                                <!-- 'text-decoration-line-through' makes it strikethrough -->
-                                <label class="h5 mb-1 text-muted text-decoration-line-through" for="task3">Call the bank</label>
-                                <div class="mt-1">
-                                     <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill fw-normal">Personal</span>
-                                </div>
-                            </div>
-                            <div class="dropdown">
-                                <button class_n="btn btn-link text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#">Mark as Incomplete</a></li>
-                                    <li><a class="dropdown-item text-danger" href="#">Delete</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                </main>
-
-                <!-- Logout Button (like in your index.html) -->
-                <button id="logout-btn" class="btn btn-outline-danger w-100 mt-4">Logout</button>
-
+                <div class="modal-body">
+                    <input type="text" id="task-description" class="form-control mb-3" placeholder="Task description" required>
+                    <input type="date" id="task-due-date" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="save-task-btn" class="btn btn-success">Save Task</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle (needed for dropdowns) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggle-btn');
+
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Show sidebar & toggle button
+            sidebar.style.display = 'block';
+            toggleBtn.style.display = 'block';
+
+            // Restore collapsed state
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+                document.body.classList.add('sidebar-collapsed');
+            }
+
+            // Restore dark mode (this is the ONLY line added)
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Toggle sidebar
+            toggleBtn.onclick = () => {
+                sidebar.classList.toggle('collapsed');
+                document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            };
+
+            // Render tasks
+            if (typeof renderTasks === 'function') renderTasks();
+        });
+    </script>
 </body>
-
 </html>
-

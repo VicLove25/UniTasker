@@ -6,25 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstNameInput = document.getElementById('firstName');
     const lastNameInput = document.getElementById('lastName');
     const errorMessage = document.getElementById('error-message');
-    //const sidebar = document.getElementById('sidebar');
-    //const toggleBtn = document.getElementById('toggle-btn');
-    //const darkModeToggle = document.getElementById('dark-mode-toggle');
-
-    //// Sidebar Toggle
-    //toggleBtn.addEventListener('click', () => {
-    //    sidebar.classList.toggle('collapsed');
-    //    document.body.classList.toggle('sidebar-collapsed');
-    //});
-
-    //// Dark Mode Toggle
-    //darkModeToggle.addEventListener('click', (e) => {
-    //    e.preventDefault();
-    //    document.body.classList.toggle('dark-mode');
-    //    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-    //});
-    //if (localStorage.getItem('darkMode') === 'true') {
-    //    document.body.classList.add('dark-mode');
-    //}
 
     function showError(msg) {
         errorMessage.textContent = msg;

@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
         const email = emailInput.value.trim();
-        const firstName = firstNameInput.value.trim();
-        const lastName = lastNameInput.value.trim();
+        const fName = firstNameInput.value.trim();
+        const lName = lastNameInput.value.trim();
 
         if (!username || !password) {
             return showError('Username and password are required.');
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password, email, firstName, lastName })
+                body: JSON.stringify({ username, password, email, fName, lName })
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Registration failed. Try another username.');

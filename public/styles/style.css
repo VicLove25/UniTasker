@@ -1,7 +1,41 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9f9;
+    transition: background-color 0.3s, color 0.3s;
 }
+
+    /* Dark Mode */
+    body.dark-mode {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+
+        body.dark-mode .text-dark {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .text-muted {
+            color: #a0a0a0 !important;
+        }
+
+        body.dark-mode .card {
+            background-color: #1e1e1e;
+            border-color: #333;
+        }
+
+        body.dark-mode .list-group-item {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            border-color: #333;
+        }
+
+        body.dark-mode .dashboard-card {
+            background: linear-gradient(135deg, #1a2a1e, #3a5a3a);
+        }
+
+        body.dark-mode .upcoming-card {
+            background-color: #1a2a1e;
+        }
 
 /* Dashboard Cards */
 .dashboard-card {
@@ -66,9 +100,6 @@ body {
     padding: 12px;
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -124,20 +155,38 @@ body {
         color: #fff;
     }
 
+.btn-outline-primary {
+    color: #3c6e47;
+    border-color: #3c6e47;
+    transition: all 0.2s;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #3c6e47;
+        color: #fff;
+    }
+
 /* Form Inputs */
-form input, form select {
+input.form-control, select.form-control {
     border-radius: 10px;
     border: 1px solid #c1c1c1;
     padding: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-    form input:focus, form select:focus {
+    input.form-control:focus, select.form-control:focus {
         border-color: #3c6e47;
         box-shadow: 0 0 6px rgba(60, 110, 71, 0.3);
         outline: none;
     }
 
-/* Error message */
+body.dark-mode input.form-control {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+/* Error Message */
 #error-message {
     font-weight: 500;
 }
@@ -203,7 +252,7 @@ form input, form select {
         background: #2e5335;
     }
 
-/* Body shift for sidebar */
+/* Body Shift */
 body.has-sidebar {
     margin-left: 240px;
     transition: margin-left 0.3s ease;

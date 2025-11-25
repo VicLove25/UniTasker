@@ -54,7 +54,7 @@ app.get('/', (req, res) => {
 // Register new user
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, email, fName, lName } = req.body;
 
         // Basic validation
         if (!username || !password || password.length < 6) {
@@ -62,7 +62,7 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         // Call the authController function
-        const newUser = await accRegister(username, password);
+        const newUser = await accRegister(username, password, email, fName, lName);
 
         if (!newUser) {
             return res.status(400).json({ error: 'Registration failed. Username may already exist.' });

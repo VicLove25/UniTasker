@@ -1,11 +1,10 @@
 // authController.js
 import bcrypt from 'bcryptjs';
 import User from '../model/User.js';
-import { connectDB, getDB } from '../db.js';
 
 const SALT_ROUNDS = 10;
 
-export async function accRegister(uName, secret) {
+export async function accRegister(uName, secret, email, fname, lname) {
     try {
 
         // Check if username exists

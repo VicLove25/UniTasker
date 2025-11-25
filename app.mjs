@@ -141,8 +141,9 @@ app.post('/api/tasks', authenticateToken, async (req, res) => {
 // READ - Get all tasks for the logged-in user (PROTECTED)
 app.get('/api/tasks', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
+        const user = new User(await User.findById(req.user.userId));
         if (!user) return res.status(404).json({ error: 'User not found' });
+
 
         const userTasks = await user.getAllTasks(); // fetch tasks only from user's TaskLists
         res.json(userTasks);

@@ -20,7 +20,8 @@ export async function accRegister(uName, secret, email, fName, lName) {
         // Hash the password before saving
         const hashedPassword = await bcrypt.hash(secret, SALT_ROUNDS);
 
-        const newUser = new User(uName, hashedPassword, email, fName, lName, [], []);
+        const _id = undefined; // Let MongoDB generate the _id
+        const newUser = new User(_id, uName, hashedPassword, email, fName, lName, [], []);
         await newUser.save(); // Save the new user to the database
 
         console.log(`Successfully created user profile for ${uName}!`);

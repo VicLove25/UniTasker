@@ -52,20 +52,15 @@
                 <div class="card card-body mb-4 border-0 shadow-sm">
                     <div class="row g-3 align-items-center">
                         <div class="col-md-auto">
-                            <span class="fw-medium text-success"><i class="bi bi-filter"></i> Filters:</span>
+                            <span class="fw-medium text-success"><i class="bi bi-filter"></i> Filter by Year:</span>
                         </div>
-                        <div class="col-md">
-                            <select class="form-select form-select-sm">
-                                <option selected>All Courses</option>
-                                <option value="1">Info Systems</option>
-                                <option value="2">Databases</option>
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            <select class="form-select form-select-sm">
-                                <option selected>All Priorities</option>
-                                <option value="1">High</option>
-                                <option value="2">Medium</option>
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="year-filter">
+                                <option value="All" selected>All Years</option>
+                                <option value="[Freshman]">Freshman</option>
+                                <option value="[Soph/Jr]">Sophomore / Junior</option>
+                                <option value="[Senior]">Senior</option>
+                                <option value="[Graduation]">Graduation</option>
                             </select>
                         </div>
                     </div>
@@ -94,7 +89,7 @@
                     <form id="addTaskForm">
                         <div class="mb-3">
                             <label for="task-desc-input" class="form-label">Task Description</label>
-                            <input type="text" class="form-control" id="task-desc-input" placeholder="e.g., Study for Math Final" required>
+                            <input type="text" class="form-control" id="task-desc-input" placeholder="e.g., [Freshman] Buy books" required>
                         </div>
                     </form>
                 </div>

@@ -170,6 +170,28 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// UPDATE - Update a task (Mark Complete or Edit)
+app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body; // Contains { isCompleted: true } or { description: "..." }
+
+        // 1. Check if the task exists and belongs to the user
+        const task = await Task.findById(id);
+        if (!task || task.createdBy !== req.user.username) {
+            return res.status(404).json({ error: 'Task not found or permission denied' });
+        }
+
+        // 2. Perform the update
+        await Task.updateById(id, updates);
+        res.json({ message: 'Task updated successfully' });
+
+    } catch (error) {
+        console.error("Update Error:", error);
+        res.status(500).json({ error: 'Failed to update task' });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`)
 })

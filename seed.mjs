@@ -3,7 +3,6 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 
 const uri = process.env.MONGO_URI;
 
-// Create a MongoClient
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -12,59 +11,71 @@ const client = new MongoClient(uri, {
   }
 });
 
-const OWNER_USERNAME = "Red"; // <--- CHANGE "User" TO YOUR ACTUAL USERNAME
-// UNA Academic Roadmap Tasks
-const roadmapTasks = [
-  // Freshman Year
-  { description: "[Freshman] Complete General Education (Gen Ed) courses", isCompleted: false },
-  { description: "[Freshman] Meet with academic advisor (Fall)", isCompleted: false },
-  { description: "[Freshman] Meet with academic advisor (Spring)", isCompleted: false },
-  { description: "[Freshman] Maintain minimum GPA ≥ 2.0", isCompleted: false },
-  { description: "[Freshman] Review Financial Aid SAP requirements", isCompleted: false },
-
-  // Sophomore & Junior Years
-  { description: "[Soph/Jr] Begin major foundation courses", isCompleted: false },
-  { description: "[Soph/Jr] Ensure 50% of major credits are upper‑level (300–400)", isCompleted: false },
-  { description: "[Soph/Jr] Explore internships & career prep", isCompleted: false },
-  { description: "[Soph/Jr] Track major requirements in catalog", isCompleted: false },
-
-  // Senior Year
-  { description: "[Senior] Finish all major, minor, and elective requirements", isCompleted: false },
-  { description: "[Senior] Confirm total credit‑hour requirements (120–128)", isCompleted: false },
-  { description: "[Senior] Review the Senior Graduation Checklist", isCompleted: false },
-  
-  // Graduation Process
-  { description: "[Graduation] Log into UNA Portal and select 'Apply for Graduation'", isCompleted: false },
-  { description: "[Graduation] Submit degree audit & review progress", isCompleted: false },
-  { description: "[Graduation] Pay graduation fee", isCompleted: false }
+// The same list of tasks
+const ROADMAP_TASKS = [
+  { description: "[Freshman] Complete General Education (Gen Ed) courses" },
+  { description: "[Freshman] Meet with academic advisor (Fall)" },
+  { description: "[Freshman] Meet with academic advisor (Spring)" },
+  { description: "[Freshman] Maintain minimum GPA ≥ 2.0" },
+  { description: "[Freshman] Review Financial Aid SAP requirements" },
+  { description: "[Soph/Jr] Begin major foundation courses" },
+  { description: "[Soph/Jr] Ensure 50% of major credits are upper‑level (300–400)" },
+  { description: "[Soph/Jr] Explore internships & career prep" },
+  { description: "[Soph/Jr] Track major requirements in catalog" },
+  { description: "[Senior] Finish all major, minor, and elective requirements" },
+  { description: "[Senior] Confirm total credit‑hour requirements (120–128)" },
+  { description: "[Senior] Review the Senior Graduation Checklist" },
+  { description: "[Graduation] Log into UNA Portal and select 'Apply for Graduation'" },
+  { description: "[Graduation] Submit degree audit & review progress" },
+  { description: "[Graduation] Pay graduation fee" }
 ];
 
-async function seedDatabase() {
+async function seedAllUsers() {
   try {
-    // Connect to MongoDB
     await client.connect();
     console.log("Connected to MongoDB Atlas!");
 
     const db = client.db("UniTask");
-    const collection = db.collection("Tasks");
+    const usersCollection = db.collection("Users");
+    const tasksCollection = db.collection("Tasks");
 
-    // Optional: Delete existing tasks to start fresh
-    // Comment this out if you want to keep old tasks
-    console.log("Cleaning up old tasks...");
-    await collection.deleteMany({}); 
+    // 1. Get ALL users
+    const users = await usersCollection.find({}).toArray();
+    console.log(`Found ${users.length} users in the database.`);
 
-    console.log("Inserting roadmap tasks...");
-    const result = await collection.insertMany(roadmapTasks);
-    console.log(`✅ Successfully seeded ${result.insertedCount} tasks from the Academic Roadmap!`);
+    // 2. Loop through each user
+    for (const user of users) {
+        const username = user.Username; 
+        console.log(`Processing user: ${username}...`);
+
+        // Optional: Clear old tasks for this user to avoid duplicates?
+        // Uncomment the next line if you want to wipe their tasks first:
+        // await tasksCollection.deleteMany({ createdBy: username });
+
+        // Prepare tasks
+        const userTasks = ROADMAP_TASKS.map(task => ({
+            description: task.description,
+            isCompleted: false,
+            createdBy: username,
+            createdAt: new Date(),
+            dueDate: new Date()
+        }));
+
+        // Insert
+        if (userTasks.length > 0) {
+            await tasksCollection.insertMany(userTasks);
+            console.log(`   -> Added ${userTasks.length} tasks for ${username}`);
+        }
+    }
+    
+    console.log("\n✅ Global Seed Complete!");
     
   } catch (error) {
     console.error("❌ Error seeding database:", error);
   } finally {
-    // Close the connection
     await client.close();
-    console.log("\n🔌 Database connection closed");
+    console.log("🔌 Database connection closed");
   }
 }
 
-// Run the seed function
-seedDatabase().catch(console.dir);
+seedAllUsers().catch(console.dir);

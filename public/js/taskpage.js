@@ -11,7 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
     const newTaskBtn = document.querySelector('.btn-primary'); 
     
-    // === NEW: Sidebar Logic ===
+    // NEW: Filter Element
+    const yearFilter = document.getElementById('year-filter');
+
+    // Sidebar Logic
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
     if(toggleBtn && sidebar) {
@@ -28,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. State
     let tasks = [];
-    let currentFilter = 'All Tasks'; 
+    let currentTab = 'All Tasks'; // Tracks To Do / Completed
+    let currentYear = 'All';      // Tracks Freshman / Senior etc.
 
     // 4. Helpers
     const getAuthHeaders = () => ({
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     };
 
-    // 5. API
+    // 5. API Functions
     async function fetchTasks() {
         try {
             const res = await fetch('/api/tasks', { headers: getAuthHeaders() });
@@ -101,21 +105,31 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) { console.error(err); }
     }
 
-    // 6. Render
+    // 6. Render Logic (Updated for Filters)
     function renderTasks() {
         taskListContainer.innerHTML = '';
+
         const filteredTasks = tasks.filter(task => {
-            if (currentFilter === 'All Tasks') return true;
-            if (currentFilter === 'To Do') return !task.isCompleted;
-            if (currentFilter === 'Completed') return task.isCompleted;
-            return true;
+            // 1. Check Tab (Status)
+            let matchesTab = true;
+            if (currentTab === 'To Do') matchesTab = !task.isCompleted;
+            if (currentTab === 'Completed') matchesTab = task.isCompleted;
+
+            // 2. Check Year (Description text)
+            let matchesYear = true;
+            if (currentYear !== 'All') {
+                // Returns true if description contains "[Freshman]", etc.
+                matchesYear = task.description.includes(currentYear);
+            }
+
+            return matchesTab && matchesYear;
         });
 
         if (filteredTasks.length === 0) {
             taskListContainer.innerHTML = `
                 <div class="text-center py-5 text-muted">
                     <i class="bi bi-clipboard-check display-4"></i>
-                    <p class="mt-3">No tasks found in "${currentFilter}"</p>
+                    <p class="mt-3">No tasks found matching your filters.</p>
                 </div>`;
             return;
         }
@@ -148,16 +162,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. Listeners
+    // 7. Event Listeners
+    
+    // Tab Clicks
     tabLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             tabLinks.forEach(l => l.classList.remove('active'));
             e.target.classList.add('active');
-            currentFilter = e.target.textContent.trim();
+            currentTab = e.target.textContent.trim(); // Update Tab State
             renderTasks();
         });
     });
+
+    // Dropdown Change (Year Filter)
+    if (yearFilter) {
+        yearFilter.addEventListener('change', (e) => {
+            currentYear = e.target.value; // Update Year State (e.g., "[Freshman]")
+            renderTasks();
+        });
+    }
 
     newTaskBtn.addEventListener('click', () => addTaskModal.show());
     saveTaskBtn.addEventListener('click', () => {

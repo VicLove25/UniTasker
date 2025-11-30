@@ -3,6 +3,24 @@ body {
     background-color: #f8f9f9;
 }
 
+/* Calendar styles */
+.calendar-header button {
+    min-width: 36px;
+}
+
+.calendar-table {
+    table-layout: fixed;
+}
+
+.calendar-table th, .calendar-table td {
+    vertical-align: middle;
+    height: 48px;
+}
+
+.calendar-today {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
 /* Dashboard Cards */
 .dashboard-card {
     background: linear-gradient(135deg, #3c6e47, #7da57d);
@@ -60,6 +78,32 @@ body {
     }
 
 /* Task List */
+/* Task List - also apply to list-group items so taskpage matches dashboard */
+.list-group-item {
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 12px;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+    border: 2px solid transparent;
+}
+
+.list-group-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    border-color: #3c6e47;
+}
+
+.list-group-item span {
+    color: #333;
+}
+
+
+/* Keep #task-list specificity working too */
 #task-list li {
     border-radius: 12px;
     margin-bottom: 10px;
@@ -71,15 +115,6 @@ body {
     align-items: center;
     transition: transform 0.2s, box-shadow 0.2s;
 }
-
-    #task-list li:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    }
-
-    #task-list li span {
-        color: #333;
-    }
 
 .completed {
     text-decoration: line-through;
@@ -122,6 +157,13 @@ body {
     .btn-outline-danger:hover {
         background-color: #a94442;
         color: #fff;
+    }
+
+    /* Make active tabs match theme */
+    .nav-tabs .nav-link.active {
+        color: #2e5335;
+        border-color: transparent;
+        font-weight: 600;
     }
 
 /* Form Inputs */
@@ -204,11 +246,22 @@ form input, form select {
     }
 
 /* Body shift for sidebar */
-body.has-sidebar {
+body {
     margin-left: 240px;
     transition: margin-left 0.3s ease;
 }
 
 body.sidebar-collapsed {
     margin-left: 70px;
+}
+
+/* Checkbox color - use dashboard green */
+.form-check-input:checked {
+    background-color: #3c6e47;
+    border-color: #3c6e47;
+}
+
+.form-check-input:focus {
+    border-color: #3c6e47;
+    box-shadow: 0 0 0 0.25rem rgba(60, 110, 71, 0.25);
 }

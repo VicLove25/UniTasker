@@ -30,7 +30,7 @@ export default class Task {
         return await Task.collection.deleteOne({ _id: new ObjectId(id) });
     }
 
-    // === NEW FUNCTION: Update a task ===
+    // === Update a task ===
     static async updateById(id, updates) {
         return await Task.collection.updateOne(
             { _id: new ObjectId(id) },

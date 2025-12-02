@@ -1,26 +1,23 @@
-﻿// js/app.js – FULLY WORKING DASHBOARD LOGIC WITH DARK MODE
+﻿// js/app.js – DASHBOARD LOGIC WITH CALENDAR INTEGRATION
 document.addEventListener('DOMContentLoaded', () => {
     // === Elements ===
     const authSection = document.getElementById('auth-section');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('login-btn');
+    
     const taskSection = document.getElementById('task-section');
     const taskList = document.getElementById('task-list');
     const upcomingListEl = document.getElementById('upcoming-list');
-    const logoutBtns = document.querySelectorAll('#logout-btn');
-
-    // Dashboard Stats
+    const logoutBtn = document.getElementById('logout-btn');
+    
     const totalTasksEl = document.getElementById('total-tasks');
     const completedTasksEl = document.getElementById('completed-tasks');
     const pendingTasksEl = document.getElementById('pending-tasks');
-
+    
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
     const errorMessage = document.getElementById('error-message');
-
-    // Dark Mode Toggle
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
 
     // Add Task Modal Elements
     const addTaskBtn = document.getElementById('add-task-btn');
@@ -28,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskModalEl = document.getElementById('task-modal');
     let taskModal = null;
     if (taskModalEl) taskModal = new bootstrap.Modal(taskModalEl);
-
+    
     const taskDescription = document.getElementById('task-description');
     const taskDueDate = document.getElementById('task-due-date');
     const modalTitle = document.getElementById('modal-title');
@@ -43,64 +40,40 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
 
-        // Restore sidebar collapsed state
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             sidebar.classList.add('collapsed');
             document.body.classList.add('sidebar-collapsed');
         }
     }
 
-    // === Dark Mode Logic ===
-    function applyDarkMode() {
-        const enabled = localStorage.getItem('darkMode') === 'enabled';
-        if (enabled) document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    }
-
-    applyDarkMode();
-
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                localStorage.removeItem('darkMode');
-            }
-        });
-    }
-
-    // === Helper: Show Error ===
+    // === Helpers ===
     function showError(message) {
-        if (errorMessage) {
+        if(errorMessage) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             setTimeout(() => errorMessage.style.display = 'none', 4000);
         } else {
-            console.error("Error:", message);
+            console.error(message);
             alert(message);
         }
     }
 
-    // === Helper: Auth Headers ===
     function getAuthHeaders() {
         const token = localStorage.getItem('token');
         if (!token) return null;
         return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
     }
 
-    // === Helper: Format Date ===
     function formatDate(dateString) {
         if (!dateString) return 'No Date';
-        const date = new Date(dateString);
-        return date.toLocaleDateString();
+        return new Date(dateString).toLocaleDateString();
     }
 
-    // === Fetch Tasks ===
+    // === Fetch Tasks (With Calendar Update) ===
     async function fetchTasks() {
         const headers = getAuthHeaders();
-        if (!headers) return;
-
+        if (!headers) return; 
+        
         try {
             const res = await fetch('/api/tasks', { headers });
             if (!res.ok) {
@@ -108,9 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Could not fetch tasks.');
             }
             const tasks = await res.json();
+            
+            // 1. Render List
             renderTasks(tasks);
+            // 2. Update Stats
             updateDashboard(tasks);
-        } catch (err) {
+            // 3. Update Calendar (NEW)
+            if (window.updateCalendarTasks) {
+                window.updateCalendarTasks(tasks);
+            }
+
+        } catch (err) { 
             console.error(err);
         }
     }
@@ -121,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         upcomingListEl.innerHTML = '';
 
         if (!tasks.length) {
-            taskList.innerHTML = '<li class="list-group-item text-muted text-center p-4">No tasks yet. Click "Add Task" to start!</li>';
+            taskList.innerHTML = '<li class="list-group-item text-muted text-center p-4">No tasks yet.</li>';
             upcomingListEl.innerHTML = '<li class="text-muted">No upcoming tasks</li>';
             return;
         }
@@ -132,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center p-3';
             li.dataset.id = task._id;
-
+            
             const isCompletedClass = task.isCompleted ? 'text-decoration-line-through text-muted' : 'fw-bold';
             const dateDisplay = formatDate(task.dueDate);
 
@@ -171,17 +152,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === Update Dashboard Stats ===
     function updateDashboard(tasks) {
         const total = tasks.length;
         const completed = tasks.filter(t => t.isCompleted).length;
-
+        
         if (totalTasksEl) totalTasksEl.textContent = total;
         if (completedTasksEl) completedTasksEl.textContent = completed;
         if (pendingTasksEl) pendingTasksEl.textContent = total - completed;
     }
 
-    // === Task List Actions ===
+    // === Event Listeners (Delegation) ===
     taskList.addEventListener('click', async e => {
         const target = e.target;
         const li = target.closest('li');
@@ -190,16 +170,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = getAuthHeaders();
         if (!headers) return logout();
 
-        // DELETE
         if (target.classList.contains('delete-btn')) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
+            if (!confirm('Delete task?')) return;
             try {
                 await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers });
                 fetchTasks();
             } catch (err) { console.error(err); }
         }
 
-        // COMPLETE / UNDO
         if (target.classList.contains('task-complete-btn')) {
             const isCurrentlyCompleted = target.textContent.trim() === 'Undo';
             try {
@@ -212,20 +190,16 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) { console.error(err); }
         }
 
-        // EDIT
         if (target.classList.contains('edit-btn')) {
             const descDiv = li.querySelector('.fs-5');
-            const currentDesc = descDiv.textContent;
-
             editingTaskId = id;
             if (modalTitle) modalTitle.textContent = 'Edit Task';
-            if (taskDescription) taskDescription.value = currentDesc;
-            if (taskDueDate) taskDueDate.value = '';
+            if (taskDescription) taskDescription.value = descDiv.textContent;
+            if (taskDueDate) taskDueDate.value = ''; 
             if (taskModal) taskModal.show();
         }
     });
 
-    // === Add Task Modal Actions ===
     if (addTaskBtn) {
         addTaskBtn.addEventListener('click', () => {
             editingTaskId = null;
@@ -240,11 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTaskBtn.addEventListener('click', async () => {
             const desc = taskDescription.value.trim();
             const due = taskDueDate.value || null;
-
-            if (!desc) {
-                alert('Please enter a task description');
-                return;
-            }
+            if (!desc) return alert('Description required');
 
             const headers = getAuthHeaders();
             if (!headers) return logout();
@@ -252,32 +222,27 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 if (editingTaskId) {
                     await fetch(`/api/tasks/${editingTaskId}`, {
-                        method: 'PUT',
-                        headers,
+                        method: 'PUT', headers,
                         body: JSON.stringify({ description: desc, dueDate: due })
                     });
                 } else {
                     await fetch('/api/tasks', {
-                        method: 'POST',
-                        headers,
+                        method: 'POST', headers,
                         body: JSON.stringify({ description: desc, dueDate: due })
                     });
                 }
                 if (taskModal) taskModal.hide();
                 fetchTasks();
-            } catch (err) {
-                console.error(err);
-                alert('Failed to save task.');
-            }
+            } catch (err) { console.error(err); alert('Save failed'); }
         });
     }
 
-    // === Login ===
+    // === Auth ===
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
-            if (!username || !password) return alert('Username and password required.');
+            if (!username || !password) return alert('Credentials required');
 
             try {
                 const res = await fetch('/api/auth/login', {
@@ -286,27 +251,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-
                 if (!res.ok) throw new Error(data.error || 'Login failed.');
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.user.username);
                 updateUIForAuthState();
-            } catch (err) {
-                alert(err.message);
-            }
+            } catch (err) { alert(err.message); }
         });
     }
 
-    // === Logout ===
     function logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         updateUIForAuthState();
     }
-    logoutBtns.forEach(btn => btn.addEventListener('click', logout));
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
-    // === UI State Management ===
     function updateUIForAuthState() {
         const token = localStorage.getItem('token');
         const isLoggedIn = !!token;
@@ -320,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (taskSection) taskSection.style.display = 'block';
             if (sidebar) sidebar.style.display = 'block';
             if (toggleBtn) toggleBtn.style.display = 'block';
-
+            
             document.body.classList.add('has-sidebar');
             if (sidebar && sidebar.classList.contains('collapsed')) {
                 document.body.classList.add('sidebar-collapsed');
@@ -333,11 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (toggleBtn) toggleBtn.style.display = 'none';
             document.body.classList.remove('has-sidebar', 'sidebar-collapsed');
         }
-
-        // Apply dark mode every UI update to prevent breaking styles
-        applyDarkMode();
     }
 
-    // Initialize UI
     updateUIForAuthState();
 });

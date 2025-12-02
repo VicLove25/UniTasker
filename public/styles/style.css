@@ -1,9 +1,83 @@
+/* ====================== GLOBAL & BODY ====================== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9f9;
+    color: #333;
+    margin-left: 240px;
+    transition: background-color 0.3s, color 0.3s, margin-left 0.3s;
 }
 
-/* Dashboard Cards */
+/* ====================== SIDEBAR ====================== */
+.sidebar {
+    height: 100vh;
+    width: 240px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #2e5335;
+    padding-top: 70px;
+    transition: width 0.3s ease, background 0.3s;
+    overflow: hidden;
+    z-index: 1000;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+}
+
+    .sidebar a {
+        display: block;
+        padding: 14px 22px;
+        font-size: 17px;
+        text-decoration: none;
+        color: #f1f1f1;
+        transition: 0.2s;
+        font-weight: 500;
+    }
+
+        .sidebar a:hover {
+            background: #3c6e47;
+            color: #fff;
+        }
+
+    .sidebar.collapsed {
+        width: 70px;
+    }
+
+        .sidebar.collapsed a span {
+            display: none;
+        }
+
+        .sidebar.collapsed a i {
+            margin-right: 0;
+        }
+
+/* Layout shift for sidebar */
+body.has-sidebar {
+    margin-left: 240px !important;
+}
+
+body.sidebar-collapsed {
+    margin-left: 70px !important;
+}
+
+/* Toggle Button */
+.toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #3c6e47;
+    border: none;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    z-index: 1200;
+    transition: background 0.2s;
+}
+
+    .toggle-btn:hover {
+        background: #2e5335;
+    }
+
+/* ====================== DASHBOARD CARDS ====================== */
 .dashboard-card {
     background: linear-gradient(135deg, #3c6e47, #7da57d);
     color: #fff;
@@ -59,25 +133,27 @@ body {
         border-radius: 8px;
     }
 
-/* Task List */
-#task-list li {
+/* ====================== TASK LIST ====================== */
+#task-list li, .list-group-item {
     border-radius: 12px;
     margin-bottom: 10px;
     padding: 12px;
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
 }
 
-    #task-list li:hover {
+    #task-list li:hover, .list-group-item:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        border-color: #3c6e47;
     }
 
-    #task-list li span {
+    .list-group-item span {
         color: #333;
     }
 
@@ -86,26 +162,23 @@ body {
     color: #9da79d;
 }
 
-/* Buttons */
-.add-task-btn {
+/* ====================== BUTTONS & FORMS ====================== */
+.btn-primary, .add-task-btn {
     background-color: #3c6e47;
+    border-color: #3c6e47;
     color: #fff;
     font-weight: 600;
-    border-radius: 8px;
-    padding: 8px 16px;
-    transition: all 0.2s;
 }
 
-    .add-task-btn:hover {
-        background-color: #2e5335;
-        transform: translateY(-2px);
+    .btn-primary:hover, .add-task-btn:hover {
+        background-color: #2e5335 !important;
+        border-color: #2e5335 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
 .btn-outline-success {
     color: #3c6e47;
     border-color: #3c6e47;
-    transition: all 0.2s;
 }
 
     .btn-outline-success:hover {
@@ -116,7 +189,6 @@ body {
 .btn-outline-danger {
     color: #a94442;
     border-color: #a94442;
-    transition: all 0.2s;
 }
 
     .btn-outline-danger:hover {
@@ -124,7 +196,7 @@ body {
         color: #fff;
     }
 
-/* Form Inputs */
+/* Forms */
 form input, form select {
     border-radius: 10px;
     border: 1px solid #c1c1c1;
@@ -137,78 +209,109 @@ form input, form select {
         outline: none;
     }
 
-/* Error message */
+/* ====================== MODALS & TABS ====================== */
+.modal-header {
+    background-color: #3c6e47;
+    color: white;
+}
+
+    .modal-header .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+.nav-tabs .nav-link {
+    color: #3c6e47;
+}
+
+    .nav-tabs .nav-link.active {
+        border-color: #dee2e6 #dee2e6 #fff;
+        color: #2e5335;
+        font-weight: 700;
+        border-top: 3px solid #3c6e47 !important;
+    }
+
+/* ====================== ERROR MESSAGE ====================== */
 #error-message {
     font-weight: 500;
 }
 
-/* Sidebar */
-.sidebar {
-    height: 100vh;
-    width: 240px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: #2e5335;
-    padding-top: 70px;
-    transition: width 0.3s ease;
-    overflow: hidden;
-    z-index: 1000;
-    box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+/* ====================== CHECKBOX ====================== */
+.form-check-input:checked {
+    background-color: #3c6e47;
+    border-color: #3c6e47;
 }
 
-    .sidebar a {
-        display: block;
-        padding: 14px 22px;
-        font-size: 17px;
-        text-decoration: none;
-        color: #f1f1f1;
-        transition: 0.2s;
-        font-weight: 500;
+.form-check-input:focus {
+    border-color: #3c6e47;
+    box-shadow: 0 0 0 0.25rem rgba(60, 110, 71, 0.25);
+}
+
+/* ====================== DARK MODE ====================== */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+    body.dark-mode .sidebar {
+        background-color: #1e1e1e;
     }
 
-        .sidebar a:hover {
-            background: #3c6e47;
+        body.dark-mode .sidebar a {
+            color: #cfcfcf;
+        }
+
+            body.dark-mode .sidebar a:hover {
+                background-color: #333;
+                color: #fff;
+            }
+
+    body.dark-mode .dashboard-card,
+    body.dark-mode .upcoming-card,
+    body.dark-mode .list-group-item {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
+        border-color: #333;
+    }
+
+        body.dark-mode .list-group-item span {
+            color: #e0e0e0;
+        }
+
+    body.dark-mode .btn-primary,
+    body.dark-mode .add-task-btn {
+        background-color: #4a7f57;
+        border-color: #4a7f57;
+        color: #fff;
+    }
+
+    body.dark-mode .btn-outline-success {
+        color: #4a7f57;
+        border-color: #4a7f57;
+    }
+
+        body.dark-mode .btn-outline-success:hover {
+            background-color: #4a7f57;
             color: #fff;
         }
 
-    .sidebar.collapsed {
-        width: 70px;
+    body.dark-mode .btn-outline-danger {
+        color: #e07b7b;
+        border-color: #e07b7b;
     }
 
-        .sidebar.collapsed a span {
-            display: none;
+        body.dark-mode .btn-outline-danger:hover {
+            background-color: #e07b7b;
+            color: #fff;
         }
 
-        .sidebar.collapsed a i {
-            margin-right: 0;
-        }
-
-/* Toggle Button */
-.toggle-btn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    background: #3c6e47;
-    border: none;
-    color: white;
-    padding: 10px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    z-index: 1200;
-    transition: background 0.2s;
-}
-
-    .toggle-btn:hover {
-        background: #2e5335;
+    body.dark-mode .modal-header {
+        background-color: #1e1e1e;
+        color: #e0e0e0;
     }
 
-/* Body shift for sidebar */
-body.has-sidebar {
-    margin-left: 240px;
-    transition: margin-left 0.3s ease;
-}
-
-body.sidebar-collapsed {
-    margin-left: 70px;
-}
+    body.dark-mode form input,
+    body.dark-mode form select {
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        border-color: #444;
+    }

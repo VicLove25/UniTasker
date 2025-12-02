@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css"> <!-- Adjust path if needed -->
+</head>
+<body>
+    <!-- Sidebar (same as index.html) -->
+    <button id="toggle-btn" class="toggle-btn" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div id="sidebar" class="sidebar">
+        <a href="../index.html"><i class="fas fa-home me-2"></i><span>Dashboard</span></a>
+        <a href="taskpage.html"><i class="fas fa-list-check me-2"></i><span>My Tasks</span></a>
+        <a href="#" class="active"><i class="fas fa-gear me-2"></i><span>Settings</span></a>
+    </div>
+
+    <div class="container mt-5 pt-5" id="main-content">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="card border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <div class="card-header bg-gradient text-white text-center py-4" style="background: linear-gradient(135deg, #3c6e47, #2e5335);">
+                        <h3 class="mb-0"><i class="fas fa-cog me-3"></i>Settings</h3>
+                    </div>
+                    <div class="card-body p-5">
+
+                        <!-- User Info -->
+                        <div class="text-center mb-5">
+                            <div class="avatar mx-auto mb-3" style="width: 100px; height: 100px; background: #3c6e47; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold;">
+                                <span id="user-initial">U</span>
+                            </div>
+                            <h5 id="settings-username" class="mb-1">Loading...</h5>
+                            <p class="text-muted">Manage your account preferences</p>
+                        </div>
+
+                        <hr class="my-5">
+
+                        <!-- Theme Toggle -->
+                        <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-3" style="background-color: rgba(60, 110, 71, 0.08);">
+                            <div>
+                                <h6 class="mb-1"><i class="fas fa-moon me-2 text-primary"></i>Dark Mode</h6>
+                                <p class="text-muted small mb-0">Reduce eye strain in low light</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="theme-toggle" style="transform: scale(1.5);">
+                                <label class="form-check-label" for="theme-toggle"></label>
+                            </div>
+                        </div>
+
+                        <!-- Future Features (Optional) -->
+                        <!--
+                        <div class="p-4 rounded-3 mb-3" style="background-color: rgba(220, 53, 69, 0.08);">
+                            <h6><i class="fas fa-key me-2"></i>Change Password</h6>
+                            <button class="btn btn-outline-danger btn-sm mt-2">Update Password</button>
+                        </div>
+
+                        <div class="p-4 rounded-3" style="background-color: rgba(220, 53, 69, 0.08);">
+                            <h6 class="text-danger"><i class="fas fa-trash-alt me-2"></i>Delete Account</h6>
+                            <p class="small text-muted">Permanently delete your account and all tasks</p>
+                            <button class="btn btn-danger btn-sm">Delete My Account</button>
+                        </div>
+                        -->
+
+                        <div class="text-center mt-5">
+                            <a href="../index.html" class="btn btn-outline-secondary px-5">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // === Sidebar Toggle (Same as your app.js) ===
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const body = document.body;
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            body.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        });
+
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+            body.classList.add('sidebar-collapsed');
+        }
+
+        // === Dark Mode Toggle (Sync with your main app) ===
+        const themeToggle = document.getElementById('theme-toggle');
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+
+        themeToggle.checked = darkMode;
+        if (darkMode) body.classList.add('dark-mode');
+
+        themeToggle.addEventListener('change', () => {
+            const isDark = themeToggle.checked;
+            body.classList.toggle('dark-mode', isDark);
+            localStorage.setItem('darkMode', isDark);
+        });
+
+        // === Load Username & Initial ===
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('settings-username').textContent = username;
+        document.getElementById('user-initial').textContent = username.charAt(0).toUpperCase();
+
+        // Optional: Auto redirect if not logged in
+        if (!localStorage.getItem('token')) {
+            window.location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>

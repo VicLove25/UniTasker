@@ -115,17 +115,18 @@ app.post('/api/auth/login', async (req, res) => {
 // CREATE - Add a new task (PROTECTED)
 app.post('/api/tasks', authenticateToken, async (req, res) => {
     try {
-        const { description } = req.body;
+        // UPDATED: Extract 'dueDate' from request body
+        const { description, dueDate } = req.body;
+        
         if (!description) {
             return res.status(400).json({ error: 'Task description is required' });
         }
 
-        // Create a new Task instance
-        const task = new Task(new Date(), description);
+        // UPDATED: Pass 'dueDate' to the Task constructor (or default to current date if empty)
+        const task = new Task(dueDate || new Date(), description);
         task.createdBy = req.user.username;
         task.isCompleted = false;
 
-        // Save using the model method
         await task.save();
 
         res.status(201).json({

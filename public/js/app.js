@@ -1,4 +1,4 @@
-﻿// js/app.js – DASHBOARD LOGIC WITH CALENDAR INTEGRATION
+﻿// js/app.js – FIXED DATE TIMEZONE ISSUE
 document.addEventListener('DOMContentLoaded', () => {
     // === Elements ===
     const authSection = document.getElementById('auth-section');
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskSection = document.getElementById('task-section');
     const taskList = document.getElementById('task-list');
     const upcomingListEl = document.getElementById('upcoming-list');
-    const logoutBtn = document.getElementById('logout-btn');
+    const logoutBtns = document.querySelectorAll('#logout-btn');
     
     const totalTasksEl = document.getElementById('total-tasks');
     const completedTasksEl = document.getElementById('completed-tasks');
@@ -19,12 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('toggle-btn');
     const errorMessage = document.getElementById('error-message');
 
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+
     // Add Task Modal Elements
     const addTaskBtn = document.getElementById('add-task-btn');
     const saveTaskBtn = document.getElementById('save-task-btn');
     const taskModalEl = document.getElementById('task-modal');
     let taskModal = null;
-    if (taskModalEl) taskModal = new bootstrap.Modal(taskModalEl);
+    if (taskModalEl) {
+        taskModal = new bootstrap.Modal(taskModalEl);
+    }
     
     const taskDescription = document.getElementById('task-description');
     const taskDueDate = document.getElementById('task-due-date');
@@ -46,30 +51,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // === Helpers ===
+    // === Dark Mode Logic ===
+    function applyDarkMode() {
+        const enabled = localStorage.getItem('darkMode') === 'enabled';
+        if(enabled) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    }
+    
+    applyDarkMode();
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.removeItem('darkMode');
+            }
+        });
+    }
+
+    // === Helper: Show Error ===
     function showError(message) {
-        if(errorMessage) {
+        if (errorMessage) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             setTimeout(() => errorMessage.style.display = 'none', 4000);
         } else {
-            console.error(message);
+            console.error("Error:", message);
             alert(message);
         }
     }
 
+    // === Helper: Auth Headers ===
     function getAuthHeaders() {
         const token = localStorage.getItem('token');
         if (!token) return null;
         return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
     }
 
+    // === Helper: Format Date (FIXED) ===
     function formatDate(dateString) {
         if (!dateString) return 'No Date';
-        return new Date(dateString).toLocaleDateString();
+        const date = new Date(dateString);
+        // The fix: Force the browser to display the date in UTC, preventing the shift to yesterday
+        return date.toLocaleDateString(undefined, { timeZone: 'UTC' });
     }
 
-    // === Fetch Tasks (With Calendar Update) ===
+    // === Fetch Tasks ===
     async function fetchTasks() {
         const headers = getAuthHeaders();
         if (!headers) return; 
@@ -81,16 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Could not fetch tasks.');
             }
             const tasks = await res.json();
-            
-            // 1. Render List
             renderTasks(tasks);
-            // 2. Update Stats
             updateDashboard(tasks);
-            // 3. Update Calendar (NEW)
-            if (window.updateCalendarTasks) {
-                window.updateCalendarTasks(tasks);
-            }
-
         } catch (err) { 
             console.error(err);
         }
@@ -102,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         upcomingListEl.innerHTML = '';
 
         if (!tasks.length) {
-            taskList.innerHTML = '<li class="list-group-item text-muted text-center p-4">No tasks yet.</li>';
+            taskList.innerHTML = '<li class="list-group-item text-muted text-center p-4">No tasks yet. Click "Add Task" to start!</li>';
             upcomingListEl.innerHTML = '<li class="text-muted">No upcoming tasks</li>';
             return;
         }
@@ -152,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // === Update Dashboard Stats ===
     function updateDashboard(tasks) {
         const total = tasks.length;
         const completed = tasks.filter(t => t.isCompleted).length;
@@ -161,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingTasksEl) pendingTasksEl.textContent = total - completed;
     }
 
-    // === Event Listeners (Delegation) ===
+    // === Task List Actions ===
     taskList.addEventListener('click', async e => {
         const target = e.target;
         const li = target.closest('li');
@@ -170,14 +192,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = getAuthHeaders();
         if (!headers) return logout();
 
+        // DELETE
         if (target.classList.contains('delete-btn')) {
-            if (!confirm('Delete task?')) return;
+            if (!confirm('Are you sure you want to delete this task?')) return;
             try {
                 await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers });
                 fetchTasks();
             } catch (err) { console.error(err); }
         }
 
+        // COMPLETE / UNDO
         if (target.classList.contains('task-complete-btn')) {
             const isCurrentlyCompleted = target.textContent.trim() === 'Undo';
             try {
@@ -190,16 +214,20 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) { console.error(err); }
         }
 
+        // EDIT
         if (target.classList.contains('edit-btn')) {
             const descDiv = li.querySelector('.fs-5');
+            const currentDesc = descDiv.textContent;
+            
             editingTaskId = id;
             if (modalTitle) modalTitle.textContent = 'Edit Task';
-            if (taskDescription) taskDescription.value = descDiv.textContent;
-            if (taskDueDate) taskDueDate.value = ''; 
+            if (taskDescription) taskDescription.value = currentDesc;
+            if (taskDueDate) taskDueDate.value = ''; // Ideally pre-fill if you parse the date back
             if (taskModal) taskModal.show();
         }
     });
 
+    // === Add Task Modal Actions ===
     if (addTaskBtn) {
         addTaskBtn.addEventListener('click', () => {
             editingTaskId = null;
@@ -214,7 +242,11 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTaskBtn.addEventListener('click', async () => {
             const desc = taskDescription.value.trim();
             const due = taskDueDate.value || null;
-            if (!desc) return alert('Description required');
+            
+            if (!desc) {
+                alert('Please enter a task description');
+                return;
+            }
 
             const headers = getAuthHeaders();
             if (!headers) return logout();
@@ -222,27 +254,32 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 if (editingTaskId) {
                     await fetch(`/api/tasks/${editingTaskId}`, {
-                        method: 'PUT', headers,
+                        method: 'PUT',
+                        headers,
                         body: JSON.stringify({ description: desc, dueDate: due })
                     });
                 } else {
                     await fetch('/api/tasks', {
-                        method: 'POST', headers,
+                        method: 'POST',
+                        headers,
                         body: JSON.stringify({ description: desc, dueDate: due })
                     });
                 }
                 if (taskModal) taskModal.hide();
                 fetchTasks();
-            } catch (err) { console.error(err); alert('Save failed'); }
+            } catch (err) { 
+                console.error(err);
+                alert('Failed to save task.');
+            }
         });
     }
 
-    // === Auth ===
+    // === Login ===
     if (loginBtn) {
         loginBtn.addEventListener('click', async () => {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
-            if (!username || !password) return alert('Credentials required');
+            if (!username || !password) return alert('Username and password required.');
 
             try {
                 const res = await fetch('/api/auth/login', {
@@ -251,22 +288,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
+                
                 if (!res.ok) throw new Error(data.error || 'Login failed.');
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.user.username);
                 updateUIForAuthState();
-            } catch (err) { alert(err.message); }
+            } catch (err) { 
+                alert(err.message); 
+            }
         });
     }
 
+    // === Logout ===
     function logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         updateUIForAuthState();
     }
-    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    logoutBtns.forEach(btn => btn.addEventListener('click', logout));
 
+    // === UI State Management ===
     function updateUIForAuthState() {
         const token = localStorage.getItem('token');
         const isLoggedIn = !!token;
@@ -293,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (toggleBtn) toggleBtn.style.display = 'none';
             document.body.classList.remove('has-sidebar', 'sidebar-collapsed');
         }
+        applyDarkMode();
     }
 
     updateUIForAuthState();

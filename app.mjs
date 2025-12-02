@@ -54,7 +54,7 @@ app.get('/', (req, res) => {
 // Register new user
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, email, fName, lName } = req.body;
 
         // Basic validation
         if (!username || !password || password.length < 6) {
@@ -62,7 +62,7 @@ app.post('/api/auth/register', async (req, res) => {
         }
 
         // Call the authController function
-        const newUser = await accRegister(username, password);
+        const newUser = await accRegister(username, password, email, fName, lName);
 
         if (!newUser) {
             return res.status(400).json({ error: 'Registration failed. Username may already exist.' });
@@ -141,13 +141,13 @@ app.post('/api/tasks', authenticateToken, async (req, res) => {
 // READ - Get all tasks for the logged-in user (PROTECTED)
 app.get('/api/tasks', authenticateToken, async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const userTasks = await user.getAllTasks(); // fetch tasks only from user's TaskLists
-        res.json(userTasks);
+        const tasks = await db.collection('Tasks')
+            .find({ createdBy: req.user.username })
+            .toArray();
+            
+        res.json(tasks); 
     } catch (error) {
-        console.error(error);
+        console.error("Error fetching tasks:", error);
         res.status(500).json({ error: 'Failed to fetch tasks' });
     }
 });
@@ -167,6 +167,28 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
         res.json({ message: 'Task deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete task' });
+    }
+});
+
+// UPDATE - Update a task (Mark Complete or Edit)
+app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body; // Contains { isCompleted: true } or { description: "..." }
+
+        // 1. Check if the task exists and belongs to the user
+        const task = await Task.findById(id);
+        if (!task || task.createdBy !== req.user.username) {
+            return res.status(404).json({ error: 'Task not found or permission denied' });
+        }
+
+        // 2. Perform the update
+        await Task.updateById(id, updates);
+        res.json({ message: 'Task updated successfully' });
+
+    } catch (error) {
+        console.error("Update Error:", error);
+        res.status(500).json({ error: 'Failed to update task' });
     }
 });
 

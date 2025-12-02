@@ -2,11 +2,14 @@ import { getDB, connectDB } from "../db.js";
 import { ObjectId } from "mongodb";
 
 export default class User {
-    constructor(username, password, fName, lName, taskLists = []) {
+    constructor(_id, username, password, email, fName, lName, groupList = [], taskLists = []) {
+        this._id = _id;
         this.Username = username;
         this.Password = password;
+        this.Email = email;
         this.First = fName;
         this.Last = lName;
+        this.Groups = groupList;
         this.TaskLists = taskLists;
     }
 

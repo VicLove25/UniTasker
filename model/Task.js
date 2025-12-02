@@ -2,13 +2,12 @@ import { getDB } from "../db.js";
 import { ObjectId } from "mongodb";
 
 export default class Task {
-    constructor(date, event) {
-        this.Date = date;
-        this.Event = event;
+    constructor(dueDate, description) {
+        this.dueDate = dueDate;
+        this.description = description;
         this.isCompleted = false;
     }
 
-    // Access collection dynamically
     static get collection() {
         return getDB().collection("Tasks");
     }
@@ -29,5 +28,13 @@ export default class Task {
 
     static async deleteById(id) {
         return await Task.collection.deleteOne({ _id: new ObjectId(id) });
+    }
+
+    // === NEW FUNCTION: Update a task ===
+    static async updateById(id, updates) {
+        return await Task.collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updates }
+        );
     }
 }

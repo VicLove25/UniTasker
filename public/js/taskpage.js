@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
     const newTaskBtn = document.querySelector('.btn-primary'); 
     
-    // NEW: Filter Element
+    // Filters
     const yearFilter = document.getElementById('year-filter');
 
     // Sidebar Logic
@@ -28,11 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
     const saveTaskBtn = document.getElementById('save-task-btn');
     const taskDescInput = document.getElementById('task-desc-input');
+    const taskDueDateInput = document.getElementById('task-due-date');
 
     // 3. State
     let tasks = [];
-    let currentTab = 'All Tasks'; // Tracks To Do / Completed
-    let currentYear = 'All';      // Tracks Freshman / Senior etc.
+    let currentTab = 'All Tasks'; 
+    let currentYear = 'All';      
 
     // 4. Helpers
     const getAuthHeaders = () => ({
@@ -51,6 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     };
 
+    // === FIX: Force UTC Timezone here too ===
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        // This ensures the date doesn't shift back by one day
+        return new Date(dateString).toLocaleDateString(undefined, { timeZone: 'UTC' });
+    };
+
     // 5. API Functions
     async function fetchTasks() {
         try {
@@ -65,16 +73,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function createTask(description) {
+    async function createTask(description, dueDate) {
         try {
             const res = await fetch('/api/tasks', {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ description })
+                body: JSON.stringify({ description, dueDate })
             });
             if (handleApiError(res)) return;
             if (res.ok) {
                 taskDescInput.value = '';
+                if(taskDueDateInput) taskDueDateInput.value = '';
                 addTaskModal.hide();
                 fetchTasks();
             }
@@ -105,25 +114,25 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) { console.error(err); }
     }
 
-    // 6. Render Logic (Updated for Filters)
+    // 6. Render Logic
     function renderTasks() {
         taskListContainer.innerHTML = '';
 
         const filteredTasks = tasks.filter(task => {
-            // 1. Check Tab (Status)
             let matchesTab = true;
             if (currentTab === 'To Do') matchesTab = !task.isCompleted;
             if (currentTab === 'Completed') matchesTab = task.isCompleted;
 
-            // 2. Check Year (Description text)
             let matchesYear = true;
             if (currentYear !== 'All') {
-                // Returns true if description contains "[Freshman]", etc.
                 matchesYear = task.description.includes(currentYear);
             }
 
             return matchesTab && matchesYear;
         });
+
+        // Sort by Due Date
+        filteredTasks.sort((a, b) => new Date(a.dueDate || '9999-12-31') - new Date(b.dueDate || '9999-12-31'));
 
         if (filteredTasks.length === 0) {
             taskListContainer.innerHTML = `
@@ -139,6 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'list-group-item list-group-item-action p-3';
             const labelClass = task.isCompleted ? 'h5 mb-1 text-muted text-decoration-line-through' : 'h5 mb-1';
             const checkedAttr = task.isCompleted ? 'checked' : '';
+            
+            // Render the Fixed Date
+            const dateDisplay = task.dueDate ? `<small class="text-muted"><i class="bi bi-calendar"></i> ${formatDate(task.dueDate)}</small>` : '';
 
             item.innerHTML = `
                 <div class="d-flex w-100 align-items-center">
@@ -147,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="flex-grow-1">
                         <label class="${labelClass}">${task.description}</label>
+                        <div>${dateDisplay}</div>
                     </div>
                     <div class="dropdown">
                         <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
@@ -163,30 +176,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 7. Event Listeners
-    
-    // Tab Clicks
     tabLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             tabLinks.forEach(l => l.classList.remove('active'));
             e.target.classList.add('active');
-            currentTab = e.target.textContent.trim(); // Update Tab State
+            currentTab = e.target.textContent.trim();
             renderTasks();
         });
     });
 
-    // Dropdown Change (Year Filter)
     if (yearFilter) {
         yearFilter.addEventListener('change', (e) => {
-            currentYear = e.target.value; // Update Year State (e.g., "[Freshman]")
+            currentYear = e.target.value;
             renderTasks();
         });
     }
 
     newTaskBtn.addEventListener('click', () => addTaskModal.show());
+    
     saveTaskBtn.addEventListener('click', () => {
         const desc = taskDescInput.value.trim();
-        if (desc) createTask(desc);
+        // Grab date value safely
+        const dueDate = taskDueDateInput ? taskDueDateInput.value : null; 
+        if (desc) createTask(desc, dueDate);
     });
 
     taskListContainer.addEventListener('click', (e) => {
@@ -202,6 +215,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initial Load
     fetchTasks();
 });

@@ -16,6 +16,8 @@
     <div id="sidebar" class="sidebar">
         <a href="index.html"><i class="fas fa-home me-2"></i> <span>Dashboard</span></a>
         <a href="taskpage.html" class="active-page" style="background: #3c6e47;"><i class="fas fa-list me-2"></i> <span>My Tasks</span></a>
+        <a href="calendar.html"><i class="fas fa-calendar-alt me-2"></i> <span>Calendar</span></a>
+        <a href="settings.html"><i class="fas fa-gear me-2"></i> <span>Settings</span></a>
     </div>
 
     <button id="toggle-btn" class="toggle-btn">
@@ -90,6 +92,10 @@
                         <div class="mb-3">
                             <label for="task-desc-input" class="form-label">Task Description</label>
                             <input type="text" class="form-control" id="task-desc-input" placeholder="e.g., [Freshman] Buy books" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-due-date" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="task-due-date">
                         </div>
                     </form>
                 </div>

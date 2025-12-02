@@ -1,20 +1,20 @@
-﻿// js/app.js – FULLY WORKING DASHBOARD LOGIC WITH DARK MODE
+﻿// js/app.js – FIXED DATE TIMEZONE ISSUE
 document.addEventListener('DOMContentLoaded', () => {
     // === Elements ===
     const authSection = document.getElementById('auth-section');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const loginBtn = document.getElementById('login-btn');
+    
     const taskSection = document.getElementById('task-section');
     const taskList = document.getElementById('task-list');
     const upcomingListEl = document.getElementById('upcoming-list');
     const logoutBtns = document.querySelectorAll('#logout-btn');
-
-    // Dashboard Stats
+    
     const totalTasksEl = document.getElementById('total-tasks');
     const completedTasksEl = document.getElementById('completed-tasks');
     const pendingTasksEl = document.getElementById('pending-tasks');
-
+    
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('toggle-btn');
     const errorMessage = document.getElementById('error-message');
@@ -27,8 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveTaskBtn = document.getElementById('save-task-btn');
     const taskModalEl = document.getElementById('task-modal');
     let taskModal = null;
-    if (taskModalEl) taskModal = new bootstrap.Modal(taskModalEl);
-
+    if (taskModalEl) {
+        taskModal = new bootstrap.Modal(taskModalEl);
+    }
+    
     const taskDescription = document.getElementById('task-description');
     const taskDueDate = document.getElementById('task-due-date');
     const modalTitle = document.getElementById('modal-title');
@@ -43,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
 
-        // Restore sidebar collapsed state
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             sidebar.classList.add('collapsed');
             document.body.classList.add('sidebar-collapsed');
@@ -53,10 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // === Dark Mode Logic ===
     function applyDarkMode() {
         const enabled = localStorage.getItem('darkMode') === 'enabled';
-        if (enabled) document.body.classList.add('dark-mode');
+        if(enabled) document.body.classList.add('dark-mode');
         else document.body.classList.remove('dark-mode');
     }
-
+    
     applyDarkMode();
 
     if (darkModeToggle) {
@@ -89,18 +90,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
     }
 
-    // === Helper: Format Date ===
+    // === Helper: Format Date (FIXED) ===
     function formatDate(dateString) {
         if (!dateString) return 'No Date';
         const date = new Date(dateString);
-        return date.toLocaleDateString();
+        // The fix: Force the browser to display the date in UTC, preventing the shift to yesterday
+        return date.toLocaleDateString(undefined, { timeZone: 'UTC' });
     }
 
     // === Fetch Tasks ===
     async function fetchTasks() {
         const headers = getAuthHeaders();
-        if (!headers) return;
-
+        if (!headers) return; 
+        
         try {
             const res = await fetch('/api/tasks', { headers });
             if (!res.ok) {
@@ -110,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tasks = await res.json();
             renderTasks(tasks);
             updateDashboard(tasks);
-        } catch (err) {
+        } catch (err) { 
             console.error(err);
         }
     }
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center p-3';
             li.dataset.id = task._id;
-
+            
             const isCompletedClass = task.isCompleted ? 'text-decoration-line-through text-muted' : 'fw-bold';
             const dateDisplay = formatDate(task.dueDate);
 
@@ -175,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateDashboard(tasks) {
         const total = tasks.length;
         const completed = tasks.filter(t => t.isCompleted).length;
-
+        
         if (totalTasksEl) totalTasksEl.textContent = total;
         if (completedTasksEl) completedTasksEl.textContent = completed;
         if (pendingTasksEl) pendingTasksEl.textContent = total - completed;
@@ -216,11 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('edit-btn')) {
             const descDiv = li.querySelector('.fs-5');
             const currentDesc = descDiv.textContent;
-
+            
             editingTaskId = id;
             if (modalTitle) modalTitle.textContent = 'Edit Task';
             if (taskDescription) taskDescription.value = currentDesc;
-            if (taskDueDate) taskDueDate.value = '';
+            if (taskDueDate) taskDueDate.value = ''; // Ideally pre-fill if you parse the date back
             if (taskModal) taskModal.show();
         }
     });
@@ -240,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTaskBtn.addEventListener('click', async () => {
             const desc = taskDescription.value.trim();
             const due = taskDueDate.value || null;
-
+            
             if (!desc) {
                 alert('Please enter a task description');
                 return;
@@ -265,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (taskModal) taskModal.hide();
                 fetchTasks();
-            } catch (err) {
+            } catch (err) { 
                 console.error(err);
                 alert('Failed to save task.');
             }
@@ -286,14 +288,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-
+                
                 if (!res.ok) throw new Error(data.error || 'Login failed.');
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.user.username);
                 updateUIForAuthState();
-            } catch (err) {
-                alert(err.message);
+            } catch (err) { 
+                alert(err.message); 
             }
         });
     }
@@ -320,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (taskSection) taskSection.style.display = 'block';
             if (sidebar) sidebar.style.display = 'block';
             if (toggleBtn) toggleBtn.style.display = 'block';
-
+            
             document.body.classList.add('has-sidebar');
             if (sidebar && sidebar.classList.contains('collapsed')) {
                 document.body.classList.add('sidebar-collapsed');
@@ -333,11 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (toggleBtn) toggleBtn.style.display = 'none';
             document.body.classList.remove('has-sidebar', 'sidebar-collapsed');
         }
-
-        // Apply dark mode every UI update to prevent breaking styles
         applyDarkMode();
     }
 
-    // Initialize UI
     updateUIForAuthState();
 });

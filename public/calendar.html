@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar - UniTasker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Sidebar - Visible by default on calendar page -->
+    <div id="sidebar" class="sidebar">
+        <a href="index.html"><i class="fas fa-home me-2"></i> <span>Dashboard</span></a>
+        <a href="taskpage.html"><i class="fas fa-plus me-2"></i> <span>Add Task</span></a>
+        <a href="calendar.html" class="active"><i class="fas fa-calendar-alt me-2"></i> <span>Calendar</span></a>
+    </div>
+
+    <!-- Toggle Button - Visible by default on calendar page -->
+    <button id="toggle-btn" class="toggle-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                <!-- === Header Section with Green Background === -->
+                <div class="calendar-page-header mb-4 p-4 rounded" style="background: linear-gradient(135deg, #3c6e47, #7da57d); color: #fff;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h2 fw-bold mb-0">Calendar</h1>
+                            <p class="mb-0" style="color: rgba(255,255,255,0.9);">View your tasks by date</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- === Calendar === -->
+                <div class="card p-4 shadow-sm">
+                    <div id="calendar" class="card p-3 shadow-sm">
+                        <!-- calendar.js will render here -->
+                    </div>
+                
+        </div>
+    </div>
+
+    <!-- Page scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/calendar.js"></script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

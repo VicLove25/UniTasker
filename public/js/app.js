@@ -52,13 +52,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTasks(tasks) {
-        taskList.innerHTML = '';
+        // Keep any static/example tasks on the page if the API returns no tasks.
         upcomingListEl.innerHTML = '';
         if (!tasks.length) {
-            taskList.innerHTML = '<li class="list-group-item text-muted">No tasks yet.</li>';
+            // If the DOM already contains task items (example tasks), leave them intact.
+            if (!taskList || taskList.children.length === 0) {
+                taskList.innerHTML = '<li class="list-group-item text-muted">No tasks yet.</li>';
+            }
             upcomingListEl.innerHTML = '<li class="text-muted">No upcoming tasks</li>';
+            // Update calendar with empty tasks
+            if (window.updateCalendarTasks) window.updateCalendarTasks([]);
             return;
         }
+        taskList.innerHTML = '';
         tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
         tasks.forEach(task => {
             const li = document.createElement('li');
@@ -81,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (upcomingListEl.innerHTML === '') {
             upcomingListEl.innerHTML = '<li class="text-muted">No upcoming tasks</li>';
         }
+        // Update calendar with tasks
+        if (window.updateCalendarTasks) window.updateCalendarTasks(tasks);
     }
 
     function updateDashboard(tasks) {
